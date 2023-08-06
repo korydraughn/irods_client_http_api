@@ -6,6 +6,8 @@ configure_file(
   ${CMAKE_BINARY_DIR}/src/version.hpp
   @ONLY)
 
+include_directories(${IRODS_EXTERNALS_FULLPATH_JSON}/include)
+
 add_subdirectory(endpoints)
 
 set(EXECUTABLE_NAME ${IRODS_HTTP_API_BINARY_NAME})

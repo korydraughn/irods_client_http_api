@@ -55,8 +55,6 @@ endif()
 
 add_compile_options(-Wall -Wextra -Werror -Wpedantic)
 
-include_directories(${IRODS_EXTERNALS_FULLPATH_JSON}/include)
-
 add_subdirectory(src)
 
 #
