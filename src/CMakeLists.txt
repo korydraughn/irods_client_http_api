@@ -45,7 +45,7 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   ${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include
-  CURL::libcurl
+  ${CURL_INCLUDE_DIRS}
   ${CMAKE_CURRENT_BINARY_DIR} # For version.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/endpoints)
@@ -56,7 +56,7 @@ target_link_libraries(
   irods_client
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_program_options.so
   ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
-  CURL::libcurl
+  ${CURL_LIBRARIES}
   $<TARGET_OBJECTS:authentication>
   $<TARGET_OBJECTS:collections>
   #$<TARGET_OBJECTS:config>

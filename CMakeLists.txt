@@ -46,7 +46,6 @@ if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 endif()
 
 find_package(CURL REQUIRED)
-#find_package(nlohmann_json "3.6.1" REQUIRED)
 find_package(OpenSSL REQUIRED COMPONENTS Crypto SSL)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
