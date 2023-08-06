@@ -239,16 +239,18 @@ namespace irods
 
         switch (_p) {
             case perms::null:            return "null";
-            case perms::read_metadata:   return "read_metadata";
-            case perms::read_object:     return "read_object";
-            case perms::read:            return "read_object";
-            case perms::create_metadata: return "create_metadata";
-            case perms::modify_metadata: return "modify_metadata";
-            case perms::delete_metadata: return "delete_metadata";
-            case perms::create_object:   return "create_object";
-            case perms::modify_object:   return "modify_object";
-            case perms::write:           return "modify_object";
-            case perms::delete_object:   return "delete_object";
+            //case perms::read_metadata:   return "read_metadata";
+            //case perms::read_object:     return "read_object";
+            //case perms::read:            return "read_object";
+            case perms::read:            return "read";
+            //case perms::create_metadata: return "create_metadata";
+            //case perms::modify_metadata: return "modify_metadata";
+            //case perms::delete_metadata: return "delete_metadata";
+            //case perms::create_object:   return "create_object";
+            //case perms::modify_object:   return "modify_object";
+            //case perms::write:           return "modify_object";
+            case perms::write:           return "write";
+            //case perms::delete_object:   return "delete_object";
             case perms::own:             return "own";
             default:                     return "?"; // TODO std::unreachable() or __builtin_unreachable()
         }
@@ -260,16 +262,16 @@ namespace irods
 
         // clang-format off
         if (_s == "null")            { return perms::null; }
-        if (_s == "read_metadata")   { return perms::read_metadata; }
-        if (_s == "read_object")     { return perms::read_object; }
-        if (_s == "red")             { return perms::read; }
-        if (_s == "create_metadata") { return perms::create_metadata; }
-        if (_s == "modify_metadata") { return perms::modify_metadata; }
-        if (_s == "delete_metadata") { return perms::delete_metadata; }
-        if (_s == "create_object")   { return perms::create_object; }
-        if (_s == "modify_object")   { return perms::modify_object; }
+        //if (_s == "read_metadata")   { return perms::read_metadata; }
+        //if (_s == "read_object")     { return perms::read_object; }
+        if (_s == "read")            { return perms::read; }
+        //if (_s == "create_metadata") { return perms::create_metadata; }
+        //if (_s == "modify_metadata") { return perms::modify_metadata; }
+        //if (_s == "delete_metadata") { return perms::delete_metadata; }
+        //if (_s == "create_object")   { return perms::create_object; }
+        //if (_s == "modify_object")   { return perms::modify_object; }
         if (_s == "write")           { return perms::write; }
-        if (_s == "delete_object")   { return perms::delete_object; }
+        //if (_s == "delete_object")   { return perms::delete_object; }
         if (_s == "own")             { return perms::own; }
         // clang-format on
 
