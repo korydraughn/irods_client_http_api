@@ -14,8 +14,8 @@ set(IRODS_HTTP_API_VERSION "${IRODS_CLIENT_VERSION}")
 set(IRODS_PACKAGE_REVISION "1")
 
 include(RequireOutOfSourceBuild)
-include(IrodsCXXCompiler)
 
+set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
 set(CMAKE_CXX_STANDARD ${IRODS_CXX_STANDARD})
 set(CMAKE_CXX_EXTENSIONS OFF)
 # export-dynamic so stacktrace entries from executables have function names.
@@ -46,7 +46,7 @@ if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 endif()
 
 find_package(CURL REQUIRED)
-find_package(nlohmann_json "3.6.1" REQUIRED)
+#find_package(nlohmann_json "3.6.1" REQUIRED)
 find_package(OpenSSL REQUIRED COMPONENTS Crypto SSL)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -55,14 +55,13 @@ endif()
 
 add_compile_options(-Wall -Wextra -Werror -Wpedantic)
 
+include_directories(${IRODS_EXTERNALS_FULLPATH_JSON}/include)
+
 add_subdirectory(src)
 
 #
 # Packaging Configuration
 #
-
-include(IrodsCPackCommon)
-include(IrodsCPackPlatform)
 
 set(IRODS_PACKAGE_NAME irods-experimental-client-http-api)
 
@@ -70,6 +69,10 @@ set(IRODS_PACKAGE_NAME irods-experimental-client-http-api)
 #list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "${CPACK_PACKAGING_INSTALL_PREFIX}${IRODS_HOME_DIRECTORY}/scripts")
 #list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "${CPACK_PACKAGING_INSTALL_PREFIX}${IRODS_HOME_DIRECTORY}/scripts/irods")
 #list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "${CPACK_PACKAGING_INSTALL_PREFIX}${IRODS_HOME_DIRECTORY}/scripts/irods/test")
+
+set(CPACK_PACKAGE_CONTACT "Renaissance Computing Institute <info@irods.org>")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The integrated Rule-Oriented Data System")
+set(CPACK_PACKAGE_VENDOR "Renaissance Computing Institute <info@irods.org>")
 
 set(CPACK_PACKAGE_VERSION ${IRODS_CLIENT_VERSION})
 set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
