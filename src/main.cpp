@@ -34,6 +34,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <iterator>
 #include <memory>
@@ -75,9 +76,9 @@ const irods::http::request_handler_map_type req_handlers{
 class listener : public std::enable_shared_from_this<listener>
 {
   public:
-    listener(net::io_context& ioc, const tcp::endpoint& endpoint, const json& _config)
-        : ioc_{ioc}
-        , acceptor_{net::make_strand(ioc)}
+    listener(net::io_context& _ioc, const tcp::endpoint& _endpoint, const json& _config)
+        : acceptor_{_ioc}
+        , socket_{_ioc}
         , max_rbuffer_size_{_config.at(json::json_pointer{"/http_server/requests/max_rbuffer_size_in_bytes"}).get<int>()}
         , timeout_in_secs_{_config.at(json::json_pointer{"/http_server/requests/timeout_in_seconds"}).get<int>()}
     {
@@ -115,6 +116,10 @@ class listener : public std::enable_shared_from_this<listener>
     // Start accepting incoming connections.
     auto run() -> void
     {
+        if (!acceptor_.is_open()) {
+            return;
+        }
+
         do_accept();
     } // run
 
@@ -122,14 +127,10 @@ class listener : public std::enable_shared_from_this<listener>
     auto do_accept() -> void
     {
         // The new connection gets its own strand
-        acceptor_.async_accept(
-            net::make_strand(ioc_),
-            beast::bind_front_handler(
-                &listener::on_accept,
-                shared_from_this()));
+        acceptor_.async_accept(socket_, std::bind(&listener::on_accept, shared_from_this(), std::placeholders::_1));
     } // do_accept
 
-    auto on_accept(beast::error_code ec, tcp::socket socket) -> void
+    auto on_accept(beast::error_code ec) -> void
     {
         if (ec) {
             irods::fail(ec, "accept");
@@ -138,15 +139,15 @@ class listener : public std::enable_shared_from_this<listener>
         else {
             // Create the session and run it
             std::make_shared<irods::http::session>(
-                std::move(socket), req_handlers, max_rbuffer_size_, timeout_in_secs_)->run();
+                std::move(socket_), req_handlers, max_rbuffer_size_, timeout_in_secs_)->run();
         }
 
         // Accept another connection
         do_accept();
     } // on_accept
 
-    net::io_context& ioc_;
     tcp::acceptor acceptor_;
+    tcp::socket socket_;
     const int max_rbuffer_size_;
     const int timeout_in_secs_;
 }; // class listener
