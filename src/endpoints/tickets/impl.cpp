@@ -15,7 +15,7 @@
 #include <boost/beast.hpp>
 #include <boost/beast/http.hpp>
 
-#include <nlohmann/json.hpp>
+#include <json.hpp>
 
 #include <string>
 #include <string_view>

@@ -11,7 +11,7 @@
 #include <boost/asio/thread_pool.hpp>
 #include <boost/config.hpp>
 
-#include <nlohmann/json.hpp>
+#include <json.hpp>
 
 #include <chrono>
 #include <iterator>

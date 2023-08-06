@@ -15,7 +15,7 @@
 #include <boost/beast/http.hpp>
 
 #include <fmt/format.h>
-#include <nlohmann/json.hpp>
+#include <json.hpp>
 
 #include <array>
 #include <string>

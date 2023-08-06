@@ -26,7 +26,7 @@
 #include <boost/program_options.hpp>
 
 #include <fmt/format.h>
-#include <nlohmann/json.hpp>
+#include <json.hpp>
 #include <spdlog/spdlog.h>
 
 #include <algorithm>

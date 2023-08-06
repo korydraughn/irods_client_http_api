@@ -15,7 +15,7 @@
 
 #include <curl/curl.h>
 #include <fmt/format.h>
-#include <nlohmann/json.hpp>
+#include <json.hpp>
 #include <spdlog/spdlog.h>
 
 namespace irods::http

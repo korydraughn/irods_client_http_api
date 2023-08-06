@@ -9,7 +9,7 @@
 #include <irods/irods_exception.hpp>
 
 #include <boost/beast.hpp>
-#include <nlohmann/json.hpp>
+#include <json.hpp>
 
 #include <string>
 
