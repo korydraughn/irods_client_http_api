@@ -29,9 +29,9 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/src # For log.hpp
   ${CMAKE_SOURCE_DIR}/src/endpoints) # For common.hpp
 
-target_link_libraries(
-  ${IRODS_HTTP_ENDPOINT}
-  PRIVATE
-  irods_client
-  ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
-  CURL::libcurl)
+#target_link_libraries(
+#  ${IRODS_HTTP_ENDPOINT}
+#  PRIVATE
+#  irods_client
+#  ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
+#  CURL::libcurl)
