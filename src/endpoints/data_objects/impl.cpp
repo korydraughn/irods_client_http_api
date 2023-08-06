@@ -402,7 +402,7 @@ namespace
             res.keep_alive(_req.keep_alive());
 
             try {
-                irods::connection_pool::connection_proxy conn;
+                irods::experimental::client_connection conn{irods::experimental::defer_connection};
                 std::unique_ptr<io::client::native_transport> tp;
 
                 std::unique_ptr<io::odstream> out;

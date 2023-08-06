@@ -9,12 +9,12 @@
 #include <irods/rcMisc.h> // For addKeyVal().
 #include <irods/rodsErrorTable.h>
 #include <irods/rodsKeyWdDef.h> // For KW_CLOSE_OPEN_REPLICAS.
-#include <irods/switch_user.h>
 
 #include <boost/any.hpp>
 #include <boost/algorithm/string.hpp>
 
 #include <curl/curl.h>
+#include <fmt/format.h>
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
@@ -307,28 +307,30 @@ namespace irods
         return std::nullopt;
     } // to_object_type_enum
 
-    // TODO May require the zone name be passed as well for federation?
-    auto get_connection(const std::string& _username) -> irods::connection_pool::connection_proxy
+    auto get_connection(const std::string& _username) -> irods::experimental::client_connection
     {
         namespace log = irods::http::log;
-        using json_pointer = nlohmann::json::json_pointer;
+        using json_ptr = nlohmann::json::json_pointer;
 
-        auto conn = irods::http::globals::connection_pool().get_connection();
-        static const auto& zone = irods::http::globals::configuration().at(json_pointer{"/irods_client/zone"}).get_ref<const std::string&>();
+        static const auto& host = irods::http::globals::configuration().at(json_ptr{"/irods_client/host"}).get_ref<const std::string&>();
+        static const auto& port = irods::http::globals::configuration().at(json_ptr{"/irods_client/port"}).get<int>();
+        static const auto& zone = irods::http::globals::configuration().at(json_ptr{"/irods_client/zone"}).get_ref<const std::string&>();
+        static const auto& rodsadmin_username = irods::http::globals::configuration().at(json_ptr{"/irods_client/rodsadmin/username"}).get_ref<const std::string&>();
+        static const auto& rodsadmin_password = irods::http::globals::configuration().at(json_ptr{"/irods_client/rodsadmin/password"}).get_ref<const std::string&>();
 
-        log::trace("{}: Changing identity associated with connection to [{}].", __func__, _username);
+        log::trace("{}: Connecting to server as [{}].", __func__, _username);
 
-        SwitchUserInput input{};
-        std::strncpy(input.username, _username.c_str(), sizeof(SwitchUserInput::username));
-        std::strncpy(input.zone, zone.c_str(), sizeof(SwitchUserInput::zone));
-        addKeyVal(&input.options, KW_CLOSE_OPEN_REPLICAS, "");
+        irods::experimental::client_connection conn{
+            irods::experimental::defer_authentication, host, port, {rodsadmin_username, zone}, {_username, zone}};
 
-        if (const auto ec = rc_switch_user(static_cast<RcComm*>(conn), &input); ec != 0) {
-            irods::http::log::error("{}: rc_switch_user error: {}", __func__, ec);
-            THROW(SYS_INTERNAL_ERR, "rc_switch_user error.");
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        if (const auto ec = clientLoginWithPassword(static_cast<RcComm*>(conn), const_cast<char*>(rodsadmin_password.c_str())); ec < 0) {
+            auto msg = fmt::format("{}: Authentication error for user [{}]. Error code [{}].", __func__, _username, ec);
+            log::error(msg);
+            THROW(ec, std::move(msg));
         }
 
-        log::trace("{}: Successfully changed identity associated with connection to [{}].", __func__, _username);
+        log::trace("{}: Successfully to server as [{}].", __func__, _username);
 
         return conn;
     } // get_connection

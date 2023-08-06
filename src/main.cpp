@@ -421,10 +421,6 @@ auto main(int _argc, char* _argv[]) -> int
         log::trace("Initializing TLS.");
         init_tls(config);
 
-        log::trace("Initializing iRODS connection pool.");
-        auto conn_pool = init_irods_connection_pool(config);
-        irods::http::globals::set_connection_pool(conn_pool);
-
         // The io_context is required for all I/O.
         log::trace("Initializing HTTP components.");
         net::io_context ioc{request_thread_count};

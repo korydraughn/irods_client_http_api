@@ -1,6 +1,7 @@
 #ifndef IRODS_HTTP_API_ENDPOINT_COMMON_HPP
 #define IRODS_HTTP_API_ENDPOINT_COMMON_HPP
 
+#include <irods/client_connection.hpp>
 #include <irods/connection_pool.hpp>
 #include <irods/filesystem/object_status.hpp>
 #include <irods/filesystem/permissions.hpp>
@@ -115,7 +116,7 @@ namespace irods
     auto to_object_type_enum(const std::string_view _s) -> std::optional<irods::experimental::filesystem::object_type>;
 
     // TODO May require the zone name be passed as well for federation?
-    auto get_connection(const std::string& _username) -> irods::connection_pool::connection_proxy;
+    auto get_connection(const std::string& _username) -> irods::experimental::client_connection;
 
     auto fail(boost::beast::error_code ec, char const* what) -> void;
 } // namespace irods
