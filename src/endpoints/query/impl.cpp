@@ -132,19 +132,22 @@ namespace
 
 	IRODS_HTTP_API_ENDPOINT_OPERATION_SIGNATURE(op_execute_genquery)
 	{
+		log::operation_logger logger{_sess_ptr->ip(), __func__};
+
 		auto result = irods::http::resolve_client_identity(_req);
 		if (result.response) {
 			return _sess_ptr->send(std::move(*result.response));
 		}
 
 		const auto client_info = result.client_info;
-		log::info("{}: client_info.username = [{}]", __func__, client_info.username);
+
+		logger.info("client_info.username = [{}]", client_info.username);
 
 		irods::http::globals::background_task(
-			[fn = __func__, _sess_ptr, req = std::move(_req), args = std::move(_args), client_info]() mutable {
+			[logger = std::move(logger), _sess_ptr, req = std::move(_req), args = std::move(_args), client_info]() mutable {
 				auto query_iter = args.find("query");
 				if (query_iter == std::end(args)) {
-					log::error("{}: Missing [query] parameter.", fn);
+					logger.error("Missing [query] parameter.");
 					return _sess_ptr->send(irods::http::fail(http::status::bad_request));
 				}
 
@@ -152,7 +155,7 @@ namespace
 				const auto parser_iter = args.find("parser");
 				if (parser_iter != std::end(args)) {
 					if (parser_iter->second != "genquery1" && parser_iter->second != "genquery2") {
-						log::error("{}: Invalid argument for [parser] parameter.", fn);
+						logger.error("Invalid argument for [parser] parameter.");
 						return _sess_ptr->send(irods::http::fail(http::status::bad_request));
 					}
 
@@ -229,7 +232,7 @@ namespace
 								offset = std::stoi(iter->second);
 							}
 							catch (const std::exception& e) {
-								log::error("{}: Could not convert [offset] parameter value into an integer. ", fn);
+								logger.error("Could not convert [offset] parameter value into an integer.");
 								return _sess_ptr->send(irods::http::fail(http::status::bad_request));
 							}
 						}
@@ -245,7 +248,7 @@ namespace
 								count = std::stoi(iter->second);
 							}
 							catch (const std::exception& e) {
-								log::error("{}: Could not convert [count] parameter value into an integer. ", fn);
+								logger.error("Could not convert [count] parameter value into an integer.");
 								return _sess_ptr->send(irods::http::fail(http::status::bad_request));
 							}
 						}
@@ -272,20 +275,26 @@ namespace
 							}
 						}
 
+						// clang-format off
 						res.body() = json{
-							{"irods_response",
-					         {
-								 {"status_code", 0},
-							 }},
-							{"rows",
-					         rows}}.dump();
+							{"irods_response", {
+								 {"status_code", 0}
+							}},
+							{"rows", rows}
+						}.dump();
+						// clang-format on
 					}
 				}
 				catch (const irods::exception& e) {
 					res.result(http::status::bad_request);
-					res.body() =
-						json{{"irods_response", {{"status_code", e.code()}, {"status_message", e.client_display_what()}}}}
-							.dump();
+					// clang-format off
+					res.body() = json{
+						{"irods_response", {
+							{"status_code", e.code()},
+							{"status_message", e.client_display_what()}
+						}}
+					}.dump();
+					// clang-format on
 				}
 				catch (const std::exception& e) {
 					res.result(http::status::internal_server_error);
@@ -299,17 +308,19 @@ namespace
 
 	IRODS_HTTP_API_ENDPOINT_OPERATION_SIGNATURE(op_execute_specific_query)
 	{
+		log::operation_logger logger{_sess_ptr->ip(), __func__};
+
 		auto result = irods::http::resolve_client_identity(_req);
 		if (result.response) {
 			return _sess_ptr->send(std::move(*result.response));
 		}
 
 		const auto client_info = result.client_info;
-		log::info("{}: client_info.username = [{}]", __func__, client_info.username);
+		logger.info("client_info.username = [{}]", client_info.username);
 
 		const auto name_iter = _args.find("name");
 		if (name_iter == std::end(_args)) {
-			log::error("{}: Missing [name] parameter.", __func__);
+			logger.error("Missing [name] parameter.");
 			return _sess_ptr->send(irods::http::fail(http::status::bad_request));
 		}
 
@@ -319,7 +330,7 @@ namespace
 				offset = std::stoi(iter->second);
 			}
 			catch (const std::exception& e) {
-				log::error("{}: Could not convert [offset] parameter value into an integer. ", __func__);
+				logger.error("Could not convert [offset] parameter value into an integer.");
 				return _sess_ptr->send(irods::http::fail(http::status::bad_request));
 			}
 		}
@@ -335,7 +346,7 @@ namespace
 				count = std::stoi(iter->second);
 			}
 			catch (const std::exception& e) {
-				log::error("{}: Could not convert [count] parameter value into an integer. ", __func__);
+				logger.error("Could not convert [count] parameter value into an integer.");
 				return _sess_ptr->send(irods::http::fail(http::status::bad_request));
 			}
 		}
@@ -358,7 +369,7 @@ namespace
 		res.set(http::field::content_type, "application/json");
 		res.keep_alive(_req.keep_alive());
 
-		irods::http::globals::background_task([fn = __func__,
+		irods::http::globals::background_task([logger = std::move(logger),
 		                                       _sess_ptr,
 		                                       client_info,
 		                                       name = name_iter->second,
@@ -366,8 +377,6 @@ namespace
 		                                       offset,
 		                                       count,
 		                                       args = std::move(args)]() mutable {
-			static_cast<void>(fn);
-
 			try {
 				json::array_t row;
 				json::array_t rows;
@@ -405,19 +414,25 @@ namespace
 					}
 				}
 
+				// clang-format off
 				res.body() = json{
-					{"irods_response",
-				     {
-						 {"status_code", 0},
-					 }},
-					{"rows",
-				     rows}}.dump();
+					{"irods_response", {
+						{"status_code", 0}
+					}},
+					{"rows", rows}
+				}.dump();
+				// clang-format on
 			}
 			catch (const irods::exception& e) {
 				res.result(http::status::bad_request);
-				res.body() =
-					json{{"irods_response", {{"status_code", e.code()}, {"status_message", e.client_display_what()}}}}
-						.dump();
+				// clang-format off
+				res.body() = json{
+					{"irods_response", {
+						{"status_code", e.code()},
+						{"status_message", e.client_display_what()}
+					}}
+				}.dump();
+				// clang-format on
 			}
 			catch (const std::exception& e) {
 				res.result(http::status::internal_server_error);

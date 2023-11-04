@@ -74,6 +74,59 @@ namespace irods::http::log
 	{
 		spdlog::critical(_format, std::forward<Args>(_args)...);
 	} // critical
+
+	class operation_logger
+	{
+	public:
+		explicit constexpr operation_logger(std::string_view _ip, std::string_view _op)
+			: prefix_{fmt::format("[{}] [{}]", _ip, _op)}
+		{
+		}
+
+		// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define IRODS_HTTP_LOG_ARGS "{} {}", prefix_, fmt::format(fmt::runtime(_format), std::forward<Args>(_args)...)
+
+		template <typename... Args>
+		constexpr auto trace(const std::string_view _format, Args&&... _args) -> void
+		{
+			spdlog::trace(IRODS_HTTP_LOG_ARGS);
+		} // trace
+
+		template <typename... Args>
+		constexpr auto info(const std::string_view _format, Args&&... _args) -> void
+		{
+			spdlog::info(IRODS_HTTP_LOG_ARGS);
+		} // info
+
+		template <typename... Args>
+		constexpr auto debug(const std::string_view _format, Args&&... _args) -> void
+		{
+			spdlog::debug(IRODS_HTTP_LOG_ARGS);
+		} // debug
+
+		template <typename... Args>
+		constexpr auto warn(const std::string_view _format, Args&&... _args) -> void
+		{
+			spdlog::warn(IRODS_HTTP_LOG_ARGS);
+		} // warn
+
+		template <typename... Args>
+		constexpr auto error(const std::string_view _format, Args&&... _args) -> void
+		{
+			spdlog::error(IRODS_HTTP_LOG_ARGS);
+		} // error
+
+		template <typename... Args>
+		constexpr auto critical(const std::string_view _format, Args&&... _args) -> void
+		{
+			spdlog::critical(IRODS_HTTP_LOG_ARGS);
+		} // critical
+
+#undef IRODS_HTTP_LOG_ARGS
+
+	private:
+		std::string prefix_;
+	}; // class operation_logger
 } //namespace irods::http::log
 
 #endif // IRODS_HTTP_API_LOG_HPP
