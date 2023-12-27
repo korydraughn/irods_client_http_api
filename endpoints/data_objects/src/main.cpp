@@ -972,9 +972,20 @@ namespace
 				}
 				auto remaining_bytes = std::stoll(iter->second);
 
+				if (remaining_bytes <= 0) {
+					log::error("{}: Invalid value for [count] parameter. Expected an integer greater than 0.", fn);
+					return _sess_ptr->send(irods::http::fail(
+						res, http::status::bad_request)); // TODO Return a JSON object with these error messages.
+				}
+
 				iter = _args.find("bytes");
 				if (iter == std::end(_args)) {
 					log::error("{}: Missing [bytes] parameter.", fn);
+					return _sess_ptr->send(irods::http::fail(res, http::status::bad_request));
+				}
+
+				if (!std::cmp_equal(remaining_bytes, iter->second.size())) {
+					log::error("{}: Requirement violated: [count] and size of [bytes] do not match.", fn);
 					return _sess_ptr->send(irods::http::fail(res, http::status::bad_request));
 				}
 
@@ -983,6 +994,8 @@ namespace
 						.at(json::json_pointer{"/irods_client/buffer_size_in_bytes_for_write_operations"})
 						.get<std::int64_t>();
 				const char* p = iter->second.data();
+
+				// TODO Make everything after this point asynchronous.
 
 				while (remaining_bytes > 0) {
 					if (!*out_ptr) {
