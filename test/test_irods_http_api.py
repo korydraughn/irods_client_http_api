@@ -218,6 +218,34 @@ class test_collections_endpoint(unittest.TestCase):
         stat_info = r.json()
         self.assertEqual(stat_info['irods_response']['status_code'], -170000) # NOT_A_COLLECTION
 
+    def test_creating_a_collection_with_insufficient_permissions_results_in_an_error_or_no_collection_being_created(self):
+        rodsuser_headers = {'Authorization': 'Bearer ' + self.rodsuser_bearer_token}
+        collection = f'/{self.zone_name}/home/{self.rodsadmin_username}/not_allowed'
+
+        # Attempting to create a collection with insufficient permissions and the
+        # "create-intermediates" parameter not set to 1 results in an error.
+        r = requests.post(self.url_endpoint, headers=rodsuser_headers, data={
+            'op': 'create',
+            'lpath': collection
+        })
+        #print(r.content) # Debug
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json()['irods_response']['status_code'], -358000) # OBJ_PATH_DOES_NOT_EXIST
+
+        # Attempting to create a collection with insufficient permissions and the
+        # "create-intermediates" parameter set to 1 results in the target collection
+        # not being created.
+        r = requests.post(self.url_endpoint, headers=rodsuser_headers, data={
+            'op': 'create',
+            'lpath': collection,
+            'create-intermediates': 1
+        })
+        #print(r.content) # Debug
+        self.assertEqual(r.status_code, 200)
+        result = r.json()
+        self.assertEqual(result['irods_response']['status_code'], 0)
+        self.assertFalse(result['created'])
+
     def test_stat_operation_returns_expected_json_structure(self):
         headers = {'Authorization': 'Bearer ' + self.rodsuser_bearer_token}
         params = {'op': 'stat', 'lpath': os.path.join('/', self.zone_name, 'home', self.rodsuser_username)}
@@ -255,7 +283,11 @@ class test_collections_endpoint(unittest.TestCase):
 
         # Create nested collections.
         collection = os.path.join(home_collection, 'c0', 'c1', 'c2')
-        r = requests.post(self.url_endpoint, headers=headers, data={'op': 'create', 'lpath': collection})
+        r = requests.post(self.url_endpoint, headers=headers, data={
+            'op': 'create',
+            'lpath': collection,
+            'create-intermediates': 1
+        })
         #print(r.content) # Debug
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.json()['irods_response']['status_code'], 0)

@@ -348,19 +348,28 @@ namespace
 				}
 
 				auto conn = irods::get_connection(client_info.username);
-				fs::client::create_collections(conn, lpath_iter->second);
+				const auto iter = _args.find("create-intermediates");
 
-				res.body() = json{{"irods_response", {{"status_code", 0}}}}.dump();
+				const auto created = (iter != std::end(_args) && iter->second == "1")
+					? fs::client::create_collections(conn, lpath_iter->second)
+					: fs::client::create_collection(conn, lpath_iter->second);
+
+				// clang-format off
+				res.body() = json{
+					{"irods_response", {
+						{"status_code", 0}
+					}},
+					{"created", created}
+				}.dump();
+				// clang-format on
 			}
 			catch (const fs::filesystem_error& e) {
 				log::error("{}: {}", fn, e.what());
-				res.result(http::status::bad_request);
 				res.body() =
 					json{{"irods_response", {{"status_code", e.code().value()}, {"status_message", e.what()}}}}.dump();
 			}
 			catch (const irods::exception& e) {
 				log::error("{}: {}", fn, e.client_display_what());
-				res.result(http::status::bad_request);
 				res.body() =
 					json{{"irods_response", {{"status_code", e.code()}, {"status_message", e.client_display_what()}}}}
 						.dump();
