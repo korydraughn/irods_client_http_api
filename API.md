@@ -783,6 +783,38 @@ If an HTTP status code of 200 is returned, the body of the response will contain
 
 If there was an error, expect an HTTP status code in either the 4XX or 5XX range.
 
+### unregister
+
+Unregisters one replica of a data object.
+
+#### Request
+
+```bash
+curl http://localhost:<port>/irods-http-api/<version>/data-objects \
+    -H 'Authorization: Bearer <token>' \
+    --data-urlencode 'op=unregister' \
+    --data-urlencode 'lpath=<string>' \ # Absolute logical path to a data object.
+    --data-urlencode 'resource=<string>' \ # The resource holding the target replica. Optional.
+    --data-urlencode 'replica-number=<integer>' # The replica number of the target replica. Optional.
+```
+
+You must provide a `resource` or `replica-number`, but not both. Failing to do so will result in an error.
+
+#### Response
+
+If an HTTP status code of 200 is returned, the body of the response will contain JSON. Its structure is shown below.
+
+```js
+{
+    "irods_response": {
+        "status_code": 0
+        "status_message": "string" // Optional
+    }
+}
+```
+
+If there was an error, expect an HTTP status code in either the 4XX or 5XX range.
+
 ### read
 
 Reads bytes from a data object.
