@@ -613,8 +613,7 @@ class test_data_objects_endpoint(unittest.TestCase):
         r = requests.post(self.url_endpoint, headers=rodsuser_headers, data={
             'op': 'write',
             'lpath': data_object,
-            'bytes': content,
-            'count': len(content)
+            'bytes': content
         })
         logging.debug(r.content)
         self.assertEqual(r.status_code, 200)
@@ -738,8 +737,7 @@ class test_data_objects_endpoint(unittest.TestCase):
             r = requests.post(self.url_endpoint, headers=rodsuser_headers, data={
                 'op': 'write',
                 'lpath': data_object,
-                'bytes': content,
-                'count': len(content)
+                'bytes': content
             })
             logging.debug(r.content)
             self.assertEqual(r.status_code, 200)
@@ -899,8 +897,7 @@ class test_data_objects_endpoint(unittest.TestCase):
             r = requests.post(self.url_endpoint, headers=rodsadmin_headers, data={
                 'op': 'write',
                 'lpath': data_object,
-                'bytes': content,
-                'count': len(content)
+                'bytes': content
             })
             logging.debug(r.content)
             self.assertEqual(r.status_code, 200)
@@ -1104,7 +1101,6 @@ class test_data_objects_endpoint(unittest.TestCase):
                         'op': 'write',
                         'parallel-write-handle': parallel_write_handle,
                         'offset': e[0] * count,
-                        'count': count,
                         'stream-index': e[0]
                     },
                     'bytes': e[1] * count
@@ -1720,8 +1716,7 @@ class test_resources_endpoint(unittest.TestCase):
             'lpath': data_object,
             'resource': resc_repl,
             'bytes': contents,
-            'offset': 0,
-            'count': len(contents)
+            'offset': 0
         })
         logging.debug(r.content)
         self.assertEqual(r.status_code, 200)
