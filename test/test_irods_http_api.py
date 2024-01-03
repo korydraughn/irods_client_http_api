@@ -237,18 +237,18 @@ class test_collections_endpoint(unittest.TestCase):
         self.assertEqual(r.json()['irods_response']['status_code'], irods_error_codes.OBJ_PATH_DOES_NOT_EXIST)
 
         # Attempting to create a collection with insufficient permissions and the
-        # "create-intermediates" parameter set to 1 results in the target collection
-        # not being created.
+        # "create-intermediates" parameter set to 1 results in an error.
         r = requests.post(self.url_endpoint, headers=rodsuser_headers, data={
             'op': 'create',
-            'lpath': collection,
+            'lpath': f'{collection}/more/path/elements', # Guards against incorrect implementations.
             'create-intermediates': 1
         })
         logging.debug(r.content)
         self.assertEqual(r.status_code, 200)
-        result = r.json()
-        self.assertEqual(result['irods_response']['status_code'], 0)
-        self.assertFalse(result['created'])
+        # Sadly, there's nothing we can do within the HTTP API implementation to make
+        # this call and the one before result in the same iRODS error code. Fixing this
+        # requires a change in the iRODS server.
+        self.assertEqual(r.json()['irods_response']['status_code'], irods_error_codes.SYS_INVALID_INPUT_PARAM)
 
     def test_stat_operation_returns_expected_json_structure(self):
         headers = {'Authorization': 'Bearer ' + self.rodsuser_bearer_token}
