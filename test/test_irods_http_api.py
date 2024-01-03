@@ -1,4 +1,5 @@
 import config
+import irods_error_codes
 
 import json
 import os
@@ -216,7 +217,7 @@ class test_collections_endpoint(unittest.TestCase):
         self.assertEqual(r.status_code, 400)
 
         stat_info = r.json()
-        self.assertEqual(stat_info['irods_response']['status_code'], -170000) # NOT_A_COLLECTION
+        self.assertEqual(stat_info['irods_response']['status_code'], irods_error_codes.NOT_A_COLLECTION)
 
     def test_creating_a_collection_with_insufficient_permissions_results_in_an_error_or_no_collection_being_created(self):
         rodsuser_headers = {'Authorization': 'Bearer ' + self.rodsuser_bearer_token}
@@ -230,7 +231,7 @@ class test_collections_endpoint(unittest.TestCase):
         })
         #print(r.content) # Debug
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.json()['irods_response']['status_code'], -358000) # OBJ_PATH_DOES_NOT_EXIST
+        self.assertEqual(r.json()['irods_response']['status_code'], irods_error_codes.OBJ_PATH_DOES_NOT_EXIST)
 
         # Attempting to create a collection with insufficient permissions and the
         # "create-intermediates" parameter set to 1 results in the target collection
@@ -275,7 +276,7 @@ class test_collections_endpoint(unittest.TestCase):
         })
         #print(r.content) # Debug
         self.assertEqual(r.status_code, 400)
-        self.assertEqual(r.json()['irods_response']['status_code'], -170000) # NOT_A_COLLECTION
+        self.assertEqual(r.json()['irods_response']['status_code'], irods_error_codes.NOT_A_COLLECTION)
 
     def test_list_operation(self):
         headers = {'Authorization': 'Bearer ' + self.rodsuser_bearer_token}
@@ -536,7 +537,7 @@ class test_collections_endpoint(unittest.TestCase):
             })
             #print(r.content) # Debug
             self.assertEqual(r.status_code, 400)
-            self.assertEqual(r.json()['irods_response']['status_code'], -170000) # NOT_A_COLLECTION
+            self.assertEqual(r.json()['irods_response']['status_code'], irods_error_codes.NOT_A_COLLECTION)
 
         finally:
             # Remove data object.
@@ -567,7 +568,7 @@ class test_collections_endpoint(unittest.TestCase):
         })
         #print(r.content) # Debug
         self.assertEqual(r.status_code, 400)
-        self.assertEqual(r.json()['irods_response']['status_code'], -170000) # NOT_A_COLLECTION
+        self.assertEqual(r.json()['irods_response']['status_code'], irods_error_codes.NOT_A_COLLECTION)
 
     @unittest.skip('Test needs to be implemented.')
     def test_return_error_on_missing_parameters(self):
@@ -768,7 +769,7 @@ class test_data_objects_endpoint(unittest.TestCase):
             'lpath': data_object,
             'replica-number': 0
         })
-        #print(r.content) # Debug
+        print(r.content) # Debug
         self.assertEqual(r.status_code, 200)
         result = r.json()
         self.assertEqual(result['irods_response']['status_code'], 0)
@@ -783,8 +784,8 @@ class test_data_objects_endpoint(unittest.TestCase):
         #print(r.content) # Debug
         self.assertEqual(r.status_code, 200)
         result = r.json()
-        self.assertEqual(result['irods_response']['status_code'], -407000) # CHECK_VERIFICATION_RESULTS
-        self.assertEqual(result['results'][0]['error_code'], -862000) # CAT_NO_CHECKSUM_FOR_REPLICA
+        self.assertEqual(result['irods_response']['status_code'], irods_error_codes.CHECK_VERIFICATION_RESULTS)
+        self.assertEqual(result['results'][0]['error_code'], irods_error_codes.CAT_NO_CHECKSUM_FOR_REPLICA)
         self.assertEqual(result['results'][0]['message'], 'WARNING: No checksum available for replica [1].')
         self.assertEqual(result['results'][0]['severity'], 'warning')
 
@@ -814,7 +815,7 @@ class test_data_objects_endpoint(unittest.TestCase):
         })
         #print(r.content) # Debug
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.json()['irods_response']['status_code'], -808000)
+        self.assertEqual(r.json()['irods_response']['status_code'], irods_error_codes.CAT_NO_ROWS_FOUND)
 
     def test_verify_checksum_operation_handles_non_existent_data_objects_gracefully(self):
         r = requests.get(self.url_endpoint, headers={'Authorization': 'Bearer ' + self.rodsuser_bearer_token}, params={
@@ -823,7 +824,7 @@ class test_data_objects_endpoint(unittest.TestCase):
         })
         #print(r.content) # Debug
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.json()['irods_response']['status_code'], -808000)
+        self.assertEqual(r.json()['irods_response']['status_code'], irods_error_codes.CAT_NO_ROWS_FOUND)
 
     def test_registering_a_new_data_object(self):
         rodsadmin_headers = {'Authorization': 'Bearer ' + self.rodsadmin_bearer_token}
@@ -843,7 +844,7 @@ class test_data_objects_endpoint(unittest.TestCase):
             })
             #print(r.content) # Debug
             self.assertEqual(r.status_code, 400)
-            self.assertEqual(r.json()['irods_response']['status_code'], -171000)
+            self.assertEqual(r.json()['irods_response']['status_code'], irods_error_codes.NOT_A_DATA_OBJECT)
 
             # Register the local file into the catalog as a new data object.
             # We know we're registering a new data object because the "as-additional-replica"
@@ -1037,7 +1038,7 @@ class test_data_objects_endpoint(unittest.TestCase):
         })
         #print(r.content) # Debug
         self.assertEqual(r.status_code, 400)
-        self.assertEqual(r.json()['irods_response']['status_code'], -171000)
+        self.assertEqual(r.json()['irods_response']['status_code'], irods_error_codes.NOT_A_DATA_OBJECT)
 
     def multipart_form_data_upload(self, **args):
         boundary = '------testing_http_api------'
