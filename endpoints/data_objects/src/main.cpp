@@ -13,6 +13,7 @@
 #include <irods/dataObjChksum.h>
 #include <irods/dataObjRepl.h>
 #include <irods/dataObjTrim.h>
+#include <irods/dataObjUnlink.h>
 #include <irods/filesystem.hpp>
 #include <irods/irods_at_scope_exit.hpp>
 #include <irods/irods_exception.hpp>
@@ -186,7 +187,6 @@ namespace
 	IRODS_HTTP_API_ENDPOINT_OPERATION_SIGNATURE(op_stat);
 
 	IRODS_HTTP_API_ENDPOINT_OPERATION_SIGNATURE(op_register);
-	IRODS_HTTP_API_ENDPOINT_OPERATION_SIGNATURE(op_unregister);
 
 	IRODS_HTTP_API_ENDPOINT_OPERATION_SIGNATURE(op_rename);
 	IRODS_HTTP_API_ENDPOINT_OPERATION_SIGNATURE(op_copy);
@@ -226,7 +226,6 @@ namespace
 		{"trim", op_trim},
 
 		{"register", op_register},
-		{"unregister", op_unregister},
 
 		{"set_permission", op_set_permission},
 		{"modify_permissions", op_modify_permissions},
@@ -1382,18 +1381,15 @@ namespace
 						return _sess_ptr->send(irods::http::fail(res, http::status::bad_request));
 					}
 
-					if (auto iter = _args.find("resource"); iter != std::end(_args)) {
-						addKeyVal(&input.condInput, RESC_NAME_KW, iter->second.c_str());
-					}
-					else if (iter = _args.find("replica-number"); iter != std::end(_args)) {
+					if (const auto iter = _args.find("replica-number"); iter != std::end(_args)) {
 						addKeyVal(&input.condInput, REPL_NUM_KW, iter->second.c_str());
 					}
 					else {
-						log::error("{}: Missing [resource] or [replica-number] parameter.", fn);
+						log::error("{}: Missing [replica-number] parameter.", fn);
 						return _sess_ptr->send(irods::http::fail(res, http::status::bad_request));
 					}
 
-					if (const auto iter = _args.find("unregister"); iter != std::end(_args) && iter->second == "1") {
+					if (const auto iter = _args.find("catalog-only"); iter != std::end(_args) && iter->second == "1") {
 						input.oprType = UNREG_OPR;
 					}
 
@@ -1410,10 +1406,14 @@ namespace
 				}
 				catch (const irods::exception& e) {
 					log::error("{}: {}", fn, e.client_display_what());
-					res.result(http::status::bad_request);
-					res.body() = json{{"irods_response",
-				                       {{"status_code", e.code()}, {"status_message", e.client_display_what()}}}}
-				                     .dump();
+					// clang-format off
+					res.body() = json{
+						{"irods_response", {
+							{"status_code", e.code()},
+							{"status_message", e.client_display_what()}
+						}
+					}}.dump();
+					// clang-format on
 				}
 				catch (const std::exception& e) {
 					log::error("{}: {}", fn, e.what());
@@ -1715,92 +1715,6 @@ namespace
 			});
 	} // op_register
 
-	IRODS_HTTP_API_ENDPOINT_OPERATION_SIGNATURE(op_unregister)
-	{
-		auto result = irods::http::resolve_client_identity(_req);
-		if (result.response) {
-			return _sess_ptr->send(std::move(*result.response));
-		}
-
-		const auto client_info = result.client_info;
-
-		irods::http::globals::background_task([fn = __func__,
-		                                       client_info,
-		                                       _sess_ptr,
-		                                       _req = std::move(_req),
-		                                       _args = std::move(_args)] {
-			log::info("{}: client_info.username = [{}]", fn, client_info.username);
-
-			http::response<http::string_body> res{http::status::ok, _req.version()};
-			res.set(http::field::server, irods::http::version::server_name);
-			res.set(http::field::content_type, "application/json");
-			res.keep_alive(_req.keep_alive());
-
-			try {
-				DataObjInp input{};
-				irods::at_scope_exit free_memory{[&input] { clearKeyVal(&input.condInput); }};
-
-				input.oprType = UNREG_OPR;
-
-				const auto lpath_iter = _args.find("lpath");
-				if (lpath_iter == std::end(_args)) {
-					log::error("{}: Missing [lpath] parameter.", fn);
-					return _sess_ptr->send(irods::http::fail(res, http::status::bad_request));
-				}
-
-				std::strncpy(input.objPath, lpath_iter->second.c_str(), sizeof(DataObjInp::objPath));
-				addKeyVal(&input.condInput, COPIES_KW, "0");
-
-				if (const auto iter = _args.find("resource"); iter != std::end(_args)) {
-					addKeyVal(&input.condInput, RESC_NAME_KW, iter->second.c_str());
-				}
-				else if (const auto iter = _args.find("replica-number"); iter != std::end(_args)) {
-					addKeyVal(&input.condInput, REPL_NUM_KW, iter->second.c_str());
-				}
-				else {
-					log::error("{}: Missing [resource] or [replica-number] parameter.", fn);
-					return _sess_ptr->send(irods::http::fail(res, http::status::bad_request));
-				}
-
-				if (const auto iter = _args.find("admin"); iter != std::end(_args)) {
-					addKeyVal(&input.condInput, ADMIN_KW, "");
-				}
-
-				auto conn = irods::get_connection(client_info.username);
-
-				if (!fs::client::is_data_object(conn, lpath_iter->second)) {
-					return _sess_ptr->send(irods::http::fail(
-						res,
-						http::status::bad_request,
-						json{{"irods_response", {{"status_code", NOT_A_DATA_OBJECT}}}}.dump()));
-				}
-
-				const auto ec = rcDataObjTrim(static_cast<RcComm*>(conn), &input);
-
-				res.body() = json{{"irods_response", {{"status_code", ec}}}}.dump();
-			}
-			catch (const fs::filesystem_error& e) {
-				log::error("{}: {}", fn, e.what());
-				res.body() =
-					json{{"irods_response", {{"status_code", e.code().value()}, {"status_message", e.what()}}}}.dump();
-			}
-			catch (const irods::exception& e) {
-				log::error("{}: {}", fn, e.client_display_what());
-				res.body() =
-					json{{"irods_response", {{"status_code", e.code()}, {"status_message", e.client_display_what()}}}}
-						.dump();
-			}
-			catch (const std::exception& e) {
-				log::error("{}: {}", fn, e.what());
-				res.result(http::status::internal_server_error);
-			}
-
-			res.prepare_payload();
-
-			_sess_ptr->send(std::move(res));
-		});
-	} // op_unregister
-
 	IRODS_HTTP_API_ENDPOINT_OPERATION_SIGNATURE(op_remove)
 	{
 		auto result = irods::http::resolve_client_identity(_req);
@@ -1829,44 +1743,57 @@ namespace
 					return _sess_ptr->send(irods::http::fail(res, http::status::bad_request));
 				}
 
+				const auto catalog_only_iter = _args.find("catalog-only");
+				if (catalog_only_iter == std::end(_args)) {
+					log::error("{}: Missing [catalog-only] parameter.", fn);
+					return _sess_ptr->send(irods::http::fail(res, http::status::bad_request));
+				}
+
+				DataObjInp input{};
+				irods::at_scope_exit free_memory{[&input] { clearKeyVal(&input.condInput); }};
+
+				std::strncpy(input.objPath, lpath_iter->second.c_str(), sizeof(DataObjInp::objPath));
+
+				if (catalog_only_iter->second == "1") {
+					input.oprType = UNREG_OPR;
+
+					if (const auto iter = _args.find("no-trash"); iter != std::end(_args) && iter->second == "1") {
+						log::error("{}: [catalog-only] and [no-trash] parameters are incompatible.", fn);
+						return _sess_ptr->send(irods::http::fail(res, http::status::bad_request));
+					}
+#if 0
+					if (const auto iter = _args.find("replica-number"); iter != std::end(_args)) {
+						addKeyVal(&input.condInput, REPL_NUM_KW, iter->second.c_str());
+					}
+					else {
+						log::error("{}: Missing [replica-number] parameter.", fn);
+						return _sess_ptr->send(irods::http::fail(res, http::status::bad_request));
+					}
+#endif
+				}
+				else if (const auto iter = _args.find("no-trash"); iter != std::end(_args) && iter->second == "1") {
+					addKeyVal(&input.condInput, FORCE_FLAG_KW, "");
+				}
+
+				if (const auto iter = _args.find("admin"); iter != std::end(_args) && iter->second == "1") {
+					addKeyVal(&input.condInput, ADMIN_KW, "");
+				}
+
 				auto conn = irods::get_connection(client_info.username);
+				const auto ec = rcDataObjUnlink(static_cast<RcComm*>(conn), &input);
 
-				if (!fs::client::is_data_object(conn, lpath_iter->second)) {
-					return _sess_ptr->send(irods::http::fail(
-						res,
-						http::status::bad_request,
-						json{{"irods_response", {{"status_code", NOT_A_DATA_OBJECT}}}}.dump()));
-				}
-
-				fs::remove_options opts = fs::remove_options::none;
-
-				if (const auto iter = _args.find("no-trash"); iter != std::end(_args) && iter->second == "1") {
-					opts = fs::remove_options::no_trash;
-				}
-
-				const auto removed = fs::client::remove(conn, lpath_iter->second, opts);
-
-				// clang-format off
-				res.body() = json{
-					{"irods_response", {
-						{"status_code", 0}
-					}},
-					{"removed", removed}
-				}.dump();
-				// clang-format on
-			}
-			catch (const fs::filesystem_error& e) {
-				log::error("{}: {}", fn, e.what());
-				res.result(http::status::bad_request);
-				res.body() =
-					json{{"irods_response", {{"status_code", e.code().value()}, {"status_message", e.what()}}}}.dump();
+				res.body() = json{{"irods_response", {{"status_code", ec}}}}.dump();
 			}
 			catch (const irods::exception& e) {
 				log::error("{}: {}", fn, e.client_display_what());
-				res.result(http::status::bad_request);
-				res.body() =
-					json{{"irods_response", {{"status_code", e.code()}, {"status_message", e.client_display_what()}}}}
-						.dump();
+				// clang-format off
+				res.body() = json{
+					{"irods_response", {
+						{"status_code", e.code()},
+						{"status_message", e.client_display_what()}
+					}}
+				}.dump();
+				// clang-format on
 			}
 			catch (const std::exception& e) {
 				log::error("{}: {}", fn, e.what());
