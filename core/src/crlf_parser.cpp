@@ -48,6 +48,8 @@ namespace irods::http
 			return {};
 		}
 
+		log::trace("TOTAL SIZE OF INCOMING BODY = [{}]", _data.size());
+
 		query_arguments_type args;
 
 		const auto boundary_start = fmt::format("--{}", _boundary);
@@ -122,11 +124,17 @@ namespace irods::http
 			}
 
 			// Read content.
-			p.next_crlf(content_length);
+			auto more = p.next_crlf_start_boundary(boundary_start);
+			log::debug("{}: more = [{}]", __func__, more);
+			log::debug("{}: content_length = [{}]", __func__, content_length); // TODO remove content_length since it's not used.
 			log::debug("{}: CAPTURED CONTENT SIZE = [{}]", __func__, p.data().size());
 			args.insert_or_assign(param_name, std::string{p.data()});
-			//log::trace("CONTENT => [{}]", p.data());
+			log::trace("CONTENT => [{}]", p.data());
 			log::trace("END OF CONTENT");
+
+			if (!more) {
+				break;
+			}
 		}
 
 		return args;

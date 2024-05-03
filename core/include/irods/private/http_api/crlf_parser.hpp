@@ -29,11 +29,37 @@ namespace irods::http
 					epos_ = spos_ + _count;
 				}
 				else {
-					epos_ = data_.find("\r\n", spos_);
+					if (const auto pos = data_.find("\r\n", spos_); std::string_view::npos != pos) {
+						epos_ = pos;
+					}
+					else {
+						epos_ = data_.size();
+						return false;
+					}
 				}
 			}
 
 			return std::string_view::npos != epos_;
+		}
+
+		auto next_crlf_start_boundary(const std::string_view _start_boundary) -> bool
+		{
+			// TODO +2 can lead to wrapping if epos_ is unsigned.
+			spos_ = std::clamp(epos_ + 2, epos_, std::string_view::npos); // Skip CRLF.
+
+			const auto bpos = data_.find(_start_boundary, spos_);
+
+			// Boundary not found.
+			if (bpos == std::string_view::npos) {
+				epos_ = data_.size();
+				return false;
+			}
+
+			// Assume the previous two bytes represent "\r\n".
+			// Move the end position to the "\r\n".
+			epos_ = bpos - 2;
+
+			return true;
 		}
 
 		auto data() -> std::string_view
