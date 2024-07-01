@@ -103,13 +103,13 @@ namespace
 		}
 
 		const auto client_info = result.client_info;
-		logging::info("{}: client_info.username = [{}]", __func__, client_info.username);
+		logging::info(*_sess_ptr, "{}: client_info.username = [{}]", __func__, client_info.username);
 
 		irods::http::globals::background_task(
 			[fn = __func__, _sess_ptr, req = std::move(_req), args = std::move(_args), client_info]() mutable {
 				auto query_iter = args.find("query");
 				if (query_iter == std::end(args)) {
-					logging::error("{}: Missing [query] parameter.", fn);
+					logging::error(*_sess_ptr, "{}: Missing [query] parameter.", fn);
 					return _sess_ptr->send(irods::http::fail(http::status::bad_request));
 				}
 
@@ -117,7 +117,7 @@ namespace
 				const auto parser_iter = args.find("parser");
 				if (parser_iter != std::end(args)) {
 					if (parser_iter->second != "genquery1" && parser_iter->second != "genquery2") {
-						logging::error("{}: Invalid argument for [parser] parameter.", fn);
+						logging::error(*_sess_ptr, "{}: Invalid argument for [parser] parameter.", fn);
 						return _sess_ptr->send(irods::http::fail(http::status::bad_request));
 					}
 
@@ -194,7 +194,7 @@ namespace
 								offset = std::stoi(iter->second);
 							}
 							catch (const std::exception& e) {
-								logging::error("{}: Could not convert [offset] parameter value into an integer. ", fn);
+								logging::error(*_sess_ptr, "{}: Could not convert [offset] parameter value into an integer. ", fn);
 								return _sess_ptr->send(irods::http::fail(http::status::bad_request));
 							}
 						}
@@ -211,7 +211,7 @@ namespace
 								count = std::stoi(iter->second);
 							}
 							catch (const std::exception& e) {
-								logging::error("{}: Could not convert [count] parameter value into an integer.", fn);
+								logging::error(*_sess_ptr, "{}: Could not convert [count] parameter value into an integer.", fn);
 								return _sess_ptr->send(irods::http::fail(http::status::bad_request));
 							}
 						}
@@ -227,7 +227,7 @@ namespace
 							}
 							else if (iter->second != "1") {
 								logging::error(
-									"{}: Invalid value for [case-sensitive] parameter. Expected a 1 or 0.", fn);
+									*_sess_ptr, "{}: Invalid value for [case-sensitive] parameter. Expected a 1 or 0.", fn);
 								return _sess_ptr->send(irods::http::fail(http::status::bad_request));
 							}
 						}
@@ -237,7 +237,7 @@ namespace
 								options |= NO_DISTINCT;
 							}
 							else if (iter->second != "1") {
-								logging::error("{}: Invalid value for [distinct] parameter. Expected a 1 or 0.", fn);
+								logging::error(*_sess_ptr, "{}: Invalid value for [distinct] parameter. Expected a 1 or 0.", fn);
 								return _sess_ptr->send(irods::http::fail(http::status::bad_request));
 							}
 						}
@@ -261,7 +261,7 @@ namespace
 					}
 				}
 				catch (const irods::exception& e) {
-					logging::error("{}: {}", fn, e.client_display_what());
+					logging::error(*_sess_ptr, "{}: {}", fn, e.client_display_what());
 					// clang-format off
 					res.body() = json{
 						{"irods_response", {
@@ -272,7 +272,7 @@ namespace
 					// clang-format on
 				}
 				catch (const std::exception& e) {
-					logging::error("{}: {}", fn, e.what());
+					logging::error(*_sess_ptr, "{}: {}", fn, e.what());
 					res.result(http::status::internal_server_error);
 				}
 
@@ -290,11 +290,11 @@ namespace
 		}
 
 		const auto client_info = result.client_info;
-		logging::info("{}: client_info.username = [{}]", __func__, client_info.username);
+		logging::info(*_sess_ptr, "{}: client_info.username = [{}]", __func__, client_info.username);
 
 		const auto name_iter = _args.find("name");
 		if (name_iter == std::end(_args)) {
-			logging::error("{}: Missing [name] parameter.", __func__);
+			logging::error(*_sess_ptr, "{}: Missing [name] parameter.", __func__);
 			return _sess_ptr->send(irods::http::fail(http::status::bad_request));
 		}
 
@@ -304,7 +304,7 @@ namespace
 				offset = std::stoi(iter->second);
 			}
 			catch (const std::exception& e) {
-				logging::error("{}: Could not convert [offset] parameter value into an integer. ", __func__);
+				logging::error(*_sess_ptr, "{}: Could not convert [offset] parameter value into an integer. ", __func__);
 				return _sess_ptr->send(irods::http::fail(http::status::bad_request));
 			}
 		}
@@ -320,7 +320,7 @@ namespace
 				count = std::stoi(iter->second);
 			}
 			catch (const std::exception& e) {
-				logging::error("{}: Could not convert [count] parameter value into an integer. ", __func__);
+				logging::error(*_sess_ptr, "{}: Could not convert [count] parameter value into an integer. ", __func__);
 				return _sess_ptr->send(irods::http::fail(http::status::bad_request));
 			}
 		}
@@ -399,13 +399,13 @@ namespace
 				     rows}}.dump();
 			}
 			catch (const irods::exception& e) {
-				logging::error("{}: {}", fn, e.client_display_what());
+				logging::error(*_sess_ptr, "{}: {}", fn, e.client_display_what());
 				res.body() =
 					json{{"irods_response", {{"status_code", e.code()}, {"status_message", e.client_display_what()}}}}
 						.dump();
 			}
 			catch (const std::exception& e) {
-				logging::error("{}: {}", fn, e.what());
+				logging::error(*_sess_ptr, "{}: {}", fn, e.what());
 				res.result(http::status::internal_server_error);
 			}
 
@@ -419,7 +419,7 @@ namespace
 	{
 		(void) _req;
 		(void) _args;
-		logging::error("{}: Operation not implemented.", __func__);
+		logging::error(*_sess_ptr, "{}: Operation not implemented.", __func__);
 		return _sess_ptr->send(irods::http::fail(http::status::not_implemented));
 	} // op_list_genquery_columns
 
@@ -427,7 +427,7 @@ namespace
 	{
 		(void) _req;
 		(void) _args;
-		logging::error("{}: Operation not implemented.", __func__);
+		logging::error(*_sess_ptr, "{}: Operation not implemented.", __func__);
 		return _sess_ptr->send(irods::http::fail(http::status::not_implemented));
 	} // op_list_specific_queries
 
@@ -435,7 +435,7 @@ namespace
 	{
 		(void) _req;
 		(void) _args;
-		logging::error("{}: Operation not implemented.", __func__);
+		logging::error(*_sess_ptr, "{}: Operation not implemented.", __func__);
 		return _sess_ptr->send(irods::http::fail(http::status::not_implemented));
 	} // op_add_specific_query
 
@@ -443,7 +443,7 @@ namespace
 	{
 		(void) _req;
 		(void) _args;
-		logging::error("{}: Operation not implemented.", __func__);
+		logging::error(*_sess_ptr, "{}: Operation not implemented.", __func__);
 		return _sess_ptr->send(irods::http::fail(http::status::not_implemented));
 	} // op_remove_specific_query
 } // anonymous namespace

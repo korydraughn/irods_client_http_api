@@ -1,6 +1,8 @@
 #ifndef IRODS_HTTP_API_LOG_HPP
 #define IRODS_HTTP_API_LOG_HPP
 
+#include "irods/private/http_api/session.hpp"
+
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
 
@@ -43,6 +45,48 @@ namespace irods::http::log
 	constexpr auto critical(fmt::format_string<Args...> _format, Args&&... _args) -> void
 	{
 		spdlog::critical(_format, std::forward<Args>(_args)...);
+	} // critical
+
+	template <typename... Args>
+	constexpr auto trace(session& _sp, fmt::format_string<Args...> _format, Args&&... _args) -> void
+	{
+		auto msg = fmt::format("[{}] {}", _sp.ip(), fmt::vformat(_format, fmt::make_format_args(_args...)));
+		spdlog::trace("{}", msg);
+	} // trace
+
+	template <typename... Args>
+	constexpr auto info(session& _sp, fmt::format_string<Args...> _format, Args&&... _args) -> void
+	{
+		auto msg = fmt::format("[{}] {}", _sp.ip(), fmt::vformat(_format, fmt::make_format_args(_args...)));
+		spdlog::info("{}", msg);
+	} // info
+
+	template <typename... Args>
+	constexpr auto debug(session& _sp, fmt::format_string<Args...> _format, Args&&... _args) -> void
+	{
+		auto msg = fmt::format("[{}] {}", _sp.ip(), fmt::vformat(_format, fmt::make_format_args(_args...)));
+		spdlog::debug("{}", msg);
+	} // debug
+
+	template <typename... Args>
+	constexpr auto warn(session& _sp, fmt::format_string<Args...> _format, Args&&... _args) -> void
+	{
+		auto msg = fmt::format("[{}] {}", _sp.ip(), fmt::vformat(_format, fmt::make_format_args(_args...)));
+		spdlog::warn("{}", msg);
+	} // warn
+
+	template <typename... Args>
+	constexpr auto error(session& _sp, fmt::format_string<Args...> _format, Args&&... _args) -> void
+	{
+		auto msg = fmt::format("[{}] {}", _sp.ip(), fmt::vformat(_format, fmt::make_format_args(_args...)));
+		spdlog::error("{}", msg);
+	} // error
+
+	template <typename... Args>
+	constexpr auto critical(session& _sp, fmt::format_string<Args...> _format, Args&&... _args) -> void
+	{
+		auto msg = fmt::format("[{}] {}", _sp.ip(), fmt::vformat(_format, fmt::make_format_args(_args...)));
+		spdlog::critical("{}", msg);
 	} // critical
 } //namespace irods::http::log
 
