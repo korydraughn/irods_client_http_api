@@ -21,8 +21,6 @@ jobs:
               dnf install -y \
                 cmake \
                 libcurl-devel \
-                lsb_release \
-                ninja-build \
                 openssl-devel \
                 rpm-build
               dnf install -y \
@@ -34,6 +32,9 @@ jobs:
               dnf config-manager -y --add-repo https://packages.irods.org/renci-irods.yum.repo
               dnf config-manager -y --set-enabled renci-irods
               dnf config-manager -y --set-enabled crb
+              dnf install -y \
+                lsb_release \
+                ninja-build
               dnf install -y \
                 "irods-devel-${{ matrix.irods-version }}-0.el9" \
                 "irods-runtime-${{ matrix.irods-version }}-0.el9"
