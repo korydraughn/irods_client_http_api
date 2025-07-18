@@ -30,7 +30,7 @@ jobs:
               rpm --import https://packages.irods.org/irods-signing-key.asc
               dnf config-manager -y --add-repo https://packages.irods.org/renci-irods.yum.repo
               dnf config-manager -y --set-enabled renci-irods
-              dnf config-manager -y --set-enabled crb
+              dnf config-manager -y --set-enabled powertools
               dnf install -y \
                 lsb_release \
                 ninja-build
