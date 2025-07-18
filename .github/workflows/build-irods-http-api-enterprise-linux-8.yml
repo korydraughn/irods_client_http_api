@@ -39,6 +39,7 @@ jobs:
                 "irods-runtime-${{ matrix.irods-version }}-0.el8"
       - name: Install iRODS Externals
         run:  |
+              dnf update -y
               dnf install -y \
                 irods-externals-clang13.0.1-0 \
                 irods-externals-cmake3.21.4-0 \

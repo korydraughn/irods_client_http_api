@@ -39,6 +39,7 @@ jobs:
                 "irods-runtime-${{ matrix.irods-version }}-0.el9"
       - name: Install iRODS Externals
         run:  |
+              dnf update -y
               dnf install -y \
                 irods-externals-clang13.0.1-0 \
                 irods-externals-fmt-libcxx8.1.1-1 \
