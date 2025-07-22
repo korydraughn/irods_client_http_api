@@ -2,6 +2,8 @@
 
 A project that presents an iRODS Zone as HTTP v1.1.
 
+![iRODS HTTP API network diagram - HTTP Basic Authentication](http_api_diagram-basic_auth.png)
+
 ## Quickstart (Running from Docker Hub Image)
 
 Generate a local configuration JSON file.
@@ -455,6 +457,8 @@ irods_http_api /path/to/config.json
 To stop the server, you can use **CTRL-C** or send **SIGINT** or **SIGTERM** to the process.
 
 ## OpenID Connect
+
+![iRODS HTTP API network diagram - OpenID Connect](http_api_diagram-openid_connect.png)
 
 Some additional configuration is required to run the OpenID Connect portion of the HTTP API.
 Following are a few points of interest.
