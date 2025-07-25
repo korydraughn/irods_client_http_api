@@ -2481,7 +2481,14 @@ namespace
 					{"new-data-size", DATA_SIZE_KW},
 					{"new-data-status", STATUS_STRING_KW},
 					{"new-data-type-name", DATA_TYPE_KW},
-					{"new-data-version", VERSION_KW}
+					{"new-data-version", VERSION_KW},
+#ifdef IRODS_DEV_PACKAGE_IS_AT_LEAST_IRODS_5
+					{"new-data-version", DATA_ACCESS_TIME_KW},
+#else
+					// This makes it possible for the HTTP API to support iRODS 5 functionality
+					// without being compiled against the iRODS 5 development package.
+					{"new-data-version", "dataAccessTime"}
+#endif // IRODS_DEV_PACKAGE_IS_AT_LEAST_IRODS_5
 				});
 				// clang-format on
 
