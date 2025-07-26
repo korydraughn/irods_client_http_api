@@ -2498,8 +2498,9 @@ namespace
 				constexpr auto built_against_irods5_or_later = false;
 #endif // IRODS_DEV_PACKAGE_IS_AT_LEAST_IRODS_5
 
-				const auto connected_to_irods5_or_later = [&client_info] {
-					auto conn = irods::get_connection(client_info.username);
+				auto conn = irods::get_connection(client_info.username);
+
+				const auto connected_to_irods5_or_later = [&conn] {
 					const auto version = irods::to_version(static_cast<RcComm*>(conn)->svrVersion->relVersion);
 					return version && *version >= irods::version{4, 90, 0};
 				}();
@@ -2534,8 +2535,17 @@ namespace
 					irods::experimental::key_value_proxy kvp{reg_params};
 					const irods::at_scope_exit clear_kvp{[&kvp] { kvp.clear(); }};
 
+					constexpr std::string_view atime_prop = "new-data-access-time";
 					for (auto&& [external_pname, internal_pname] : properties) {
 						if (const auto iter = _args.find(external_pname); iter != std::end(_args)) {
+							// TODO: Consider removing this.
+							// TODO: Check if older servers return an error on unknown properties.
+							// TODO: If this is kept, don't forget to handle the other locations.
+							if (!connected_to_irods5_or_later && external_pname == atime_prop) {
+								logging::error(*_sess_ptr, "{}: iRODS server does not support access time.", fn);
+								return _sess_ptr->send(irods::http::fail(res, http::status::bad_request));
+							}
+
 							kvp[internal_pname] = iter->second;
 						}
 					}
@@ -2553,7 +2563,6 @@ namespace
 					input.dataObjInfo = &info;
 					input.regParam = &reg_params;
 
-					auto conn = irods::get_connection(client_info.username);
 					const auto ec = rcModDataObjMeta(static_cast<RcComm*>(conn), &input);
 
 					res.body() = json{{"irods_response", {{"status_code", ec}}}}.dump();
@@ -2674,8 +2683,6 @@ namespace
 					     nullptr},
 						{PACK_TABLE_END_PI, nullptr, nullptr},
 					});
-
-					auto conn = irods::get_connection(client_info.username);
 
 					const auto ec = irods::http::compatibility::procApiRequest(
 						static_cast<RcComm*>(conn),
@@ -2810,8 +2817,6 @@ namespace
 					     nullptr},
 						{PACK_TABLE_END_PI, nullptr, nullptr},
 					});
-
-					auto conn = irods::get_connection(client_info.username);
 
 					const auto ec = irods::http::compatibility::procApiRequest(
 						static_cast<RcComm*>(conn),
