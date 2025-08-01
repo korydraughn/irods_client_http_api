@@ -353,7 +353,7 @@ namespace irods::http
 
 		if (found_token) {
 			if (token_expired) {
-				logging::error("{}: Session for bearer token [{}] has expired.", __func__, bearer_token);
+				logging::info("{}: Session for bearer token [{}] has expired.", __func__, bearer_token);
 				return {.response = fail(status_type::unauthorized)};
 			}
 
@@ -394,7 +394,7 @@ namespace irods::http
 			}
 
 			if (json_res.empty()) {
-				logging::error("{}: Could not find bearer token matching [{}].", __func__, bearer_token);
+				logging::info("{}: Could not find bearer token matching [{}].", __func__, bearer_token);
 				return {.response = fail(status_type::unauthorized)};
 			}
 
@@ -409,7 +409,7 @@ namespace irods::http
 		}
 
 		logging::debug("{}: No [openid_connect] stanza found in server configuration.", __func__);
-		logging::error("{}: Could not find bearer token matching [{}].", __func__, bearer_token);
+		logging::info("{}: Could not find bearer token matching [{}].", __func__, bearer_token);
 		return {.response = fail(status_type::unauthorized)};
 	} // resolve_client_identity
 
