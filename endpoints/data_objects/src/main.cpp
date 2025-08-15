@@ -1185,28 +1185,10 @@ namespace
 					tp = std::make_unique<io::client::native_transport>(conn);
 
 					if (const auto iter = _args.find("resource"); iter != std::end(_args)) {
-#if 0
-						if (_args.find("replica-number") != std::end(_args)) {
-							logging::error(
-								*_sess_ptr, "{}: [resource] and [replica-number] parameters are incompatible.", fn);
-							res.result(http::status::bad_request);
-							res.prepare_payload();
-							return _sess_ptr->send(std::move(res));
-						}
-#endif
 						out = std::make_unique<io::odstream>(
 							*tp, lpath_iter->second, io::root_resource_name{iter->second}, openmode);
 					}
                                         else if (const auto iter = _args.find("replica-number"); iter != std::end(_args)) {
-#if 0
-						if (_args.find("resource") != std::end(_args)) {
-							logging::error(
-								*_sess_ptr, "{}: [resource] and [replica-number] parameters are incompatible.", fn);
-							res.result(http::status::bad_request);
-							res.prepare_payload();
-							return _sess_ptr->send(std::move(res));
-						}
-#endif
 						int value = -1;
 						try {
 							value = std::stoi(iter->second);
@@ -3302,18 +3284,6 @@ namespace irods::http::endpoint_operation
 				tp = std::make_unique<io::client::native_transport>(conn);
 
 				if (const auto iter = headers.find("irods-api-request-resource"); iter != std::end(headers)) {
-#if 0
-					if (headers.find("irods-api-request-replica-number") != std::end(headers)) {
-						logging::error(
-							*_sess_ptr,
-							"{}: [irods-api-request-resource] and [irods-api-request-replica-number] parameters are "
-						    "incompatible.",
-							__func__);
-						res.result(::http::status::bad_request);
-						res.prepare_payload();
-						return _sess_ptr->send(std::move(res));
-					}
-#endif
 					out = std::make_unique<io::odstream>(
 						*tp,
 						std::string{lpath_iter->value()},
@@ -3322,18 +3292,6 @@ namespace irods::http::endpoint_operation
 				}
 				else if (const auto iter = headers.find("irods-api-request-replica-number"); iter != std::end(headers))
 				{
-#if 0
-					if (headers.find("irods-api-request-resource") != std::end(headers)) {
-						logging::error(
-							*_sess_ptr,
-							"{}: [irods-api-request-resource] and [irods-api-request-replica-number] parameters are "
-						    "incompatible.",
-							__func__);
-						res.result(::http::status::bad_request);
-						res.prepare_payload();
-						return _sess_ptr->send(std::move(res));
-					}
-#endif
 					int value = -1;
 					try {
 						value = std::stoi(iter->value());
