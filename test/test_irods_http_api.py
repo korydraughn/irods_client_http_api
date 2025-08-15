@@ -3339,6 +3339,122 @@ class test_data_objects_endpoint(unittest.TestCase):
             })
             self.logger.debug(r.content)
 
+    def test_read_write_replicate_operations_support_targeting_replicas_by_replica_number(self):
+        rodsuser_headers = {'Authorization': f'Bearer {self.rodsuser_bearer_token}'}
+        rodsadmin_headers = {'Authorization': f'Bearer {self.rodsadmin_bearer_token}'}
+        data_object = f'/{self.zone_name}/home/{self.rodsuser_username}/data_object.txt'
+        resc_name = 'ufs_targeting_replicas'
+
+        try:
+            # Create a unixfilesystem resource.
+            r = requests.post(f'{self.url_base}/resources', headers=rodsadmin_headers, data={
+                'op': 'create',
+                'name': resc_name,
+                'type': 'unixfilesystem',
+                'host': self.server_hostname,
+                'vault-path': os.path.join('/tmp', f'{resc_name}_vault')
+            })
+            self.logger.debug(r.content)
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual(r.json()['irods_response']['status_code'], 0)
+
+            # Create a non-empty data object.
+            r = requests.post(self.url_endpoint, headers=rodsuser_headers, data={
+                'op': 'write',
+                'lpath': data_object,
+                'bytes': 'Hello, this message was written via the iRODS HTTP API!'
+            })
+            self.logger.debug(r.content)
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual(r.json()['irods_response']['status_code'], 0)
+
+            # Replicate the data object.
+            r = requests.post(self.url_endpoint, headers=rodsuser_headers, data={
+                'op': 'replicate',
+                'lpath': data_object,
+                'dst-resource': resc_name
+            })
+            self.logger.debug(r.content)
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual(r.json()['irods_response']['status_code'], 0)
+
+            # Overwrite the contents of replica 0.
+            r = requests.post(self.url_endpoint, headers=rodsuser_headers, data={
+                'op': 'write',
+                'lpath': data_object,
+                'replica-number': 0,
+                'bytes': 'Just made replica one stale.'
+            })
+            self.logger.debug(r.content)
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual(r.json()['irods_response']['status_code'], 0)
+
+            # Show that the contents of each replica is different.
+            r = requests.get(self.url_endpoint, headers=rodsuser_headers, params={
+                'op': 'read',
+                'lpath': data_object,
+                'replica-number': 0
+            })
+            self.logger.debug(r.content)
+            self.assertEqual(r.status_code, 200)
+            replica_0_data = r.content.decode('utf-8')
+
+            r = requests.get(self.url_endpoint, headers=rodsuser_headers, params={
+                'op': 'read',
+                'lpath': data_object,
+                'replica-number': 1
+            })
+            self.logger.debug(r.content)
+            self.assertEqual(r.status_code, 200)
+            self.assertNotEqual(r.content.decode('utf-8'), replica_0_data)
+
+            # Replicate the contents of replica 0 to replica 1.
+            r = requests.post(self.url_endpoint, headers=rodsuser_headers, data={
+                'op': 'replicate',
+                'lpath': data_object,
+                'src-replica-number': 0,
+                'dst-resource': resc_name
+            })
+            self.logger.debug(r.content)
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual(r.json()['irods_response']['status_code'], 0)
+
+            # Show that the replicas contain the same data.
+            r = requests.get(self.url_endpoint, headers=rodsuser_headers, params={
+                'op': 'read',
+                'lpath': data_object,
+                'resource': 'demoResc'
+            })
+            self.logger.debug(r.content)
+            self.assertEqual(r.status_code, 200)
+            replica_0_data = r.content.decode('utf-8')
+
+            r = requests.get(self.url_endpoint, headers=rodsuser_headers, params={
+                'op': 'read',
+                'lpath': data_object,
+                'resource': resc_name
+            })
+            self.logger.debug(r.content)
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual(r.content.decode('utf-8'), replica_0_data)
+
+        finally:
+            # Remove the data object.
+            r = requests.post(self.url_endpoint, headers=rodsuser_headers, data={
+                'op': 'remove',
+                'lpath': data_object,
+                'catalog-only': 0,
+                'no-trash': 1
+            })
+            self.logger.debug(r.content)
+
+            # Remove the resource.
+            r = requests.post(f'{self.url_base}/resources', headers=rodsadmin_headers, data={
+                'op': 'remove',
+                'name': resc_name
+            })
+            self.logger.debug(r.content)
+
 class test_information_endpoint(unittest.TestCase):
 
     @classmethod
