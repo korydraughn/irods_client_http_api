@@ -856,6 +856,7 @@ namespace
 					io::idstream in;
 
 					if (auto iter = _args.find("resource"); iter != std::end(_args)) {
+#if 0
 						if (_args.find("replica-number") != std::end(_args)) {
 							logging::error(
 								*_sess_ptr, "{}: [resource] and [replica-number] parameters are incompatible.", fn);
@@ -863,7 +864,7 @@ namespace
 							res.prepare_payload();
 							return _sess_ptr->send(std::move(res));
 						}
-
+#endif
 						logging::debug(
 							*_sess_ptr,
 							"{}: Opening replica of [{}] on resource [{}].",
@@ -873,6 +874,7 @@ namespace
 						in.open(*tp, lpath_iter->second, io::root_resource_name{iter->second});
 					}
 					else if (iter = _args.find("replica-number"); iter != std::end(_args)) {
+#if 0
 						if (_args.find("resource") != std::end(_args)) {
 							logging::error(
 								*_sess_ptr, "{}: [resource] and [replica-number] parameters are incompatible.", fn);
@@ -880,7 +882,7 @@ namespace
 							res.prepare_payload();
 							return _sess_ptr->send(std::move(res));
 						}
-
+#endif
 						int value = -1;
 						try {
 							value = std::stoi(iter->second);
@@ -947,6 +949,7 @@ namespace
 				io::idstream in;
 
 				if (auto iter = _args.find("resource"); iter != std::end(_args)) {
+#if 0
 					if (_args.find("replica-number") != std::end(_args)) {
 						logging::error(
 							*_sess_ptr, "{}: [resource] and [replica-number] parameters are incompatible.", fn);
@@ -954,7 +957,7 @@ namespace
 						res.prepare_payload();
 						return _sess_ptr->send(std::move(res));
 					}
-
+#endif
 					logging::debug(
 						*_sess_ptr,
 						"{}: Opening replica of [{}] on resource [{}].",
@@ -964,6 +967,7 @@ namespace
 					in.open(tp, lpath_iter->second, io::root_resource_name{iter->second});
 				}
 				else if (iter = _args.find("replica-number"); iter != std::end(_args)) {
+#if 0
 					if (_args.find("resource") != std::end(_args)) {
 						logging::error(
 							*_sess_ptr, "{}: [resource] and [replica-number] parameters are incompatible.", fn);
@@ -971,7 +975,7 @@ namespace
 						res.prepare_payload();
 						return _sess_ptr->send(std::move(res));
 					}
-
+#endif
 					int value = -1;
 					try {
 						value = std::stoi(iter->second);
