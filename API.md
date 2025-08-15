@@ -926,7 +926,8 @@ curl http://localhost:<port>/irods-http-api/<version>/data-objects \
     -H 'Authorization: Bearer <token>' \
     [-F,--data-urlencode] 'op=write' \
     [-F,--data-urlencode] 'lpath=<string>' \ # Absolute logical path to a data object.
-    [-F,--data-urlencode] 'resource=<string>' \ # The root resource to write to. Optional.
+    [-F,--data-urlencode] 'resource=<string>' \ # The root resource holding the replica to write to. Optional.
+    [-F,--data-urlencode] 'replica-number=<integer>' \ # The replica number of the replica to write to. Optional.
     [-F,--data-urlencode] 'offset=<integer>' \ # Number of bytes to skip. Defaults to 0. Optional.
     [-F,--data-urlencode] 'truncate=<integer>' \ # 0 or 1. Defaults to 1. Truncates the data object before writing. Optional.
     [-F,--data-urlencode] 'append=<integer>' \ # 0 or 1. Defaults to 0. Appends the bytes to the data object. Optional.
@@ -934,6 +935,8 @@ curl http://localhost:<port>/irods-http-api/<version>/data-objects \
     [-F,--data-urlencode] 'parallel-write-handle=<string>' \ # The handle to use when writing in parallel. Optional.
     [-F,--data-urlencode] 'stream-index=<integer>' # The stream to use when writing in parallel. Optional.
 ```
+
+`resource` and `replica-number` are mutually exclusive parameters. The behavior of the operation is unspecified if both parameters are provided.
 
 This method is the original implementation. It sends all information via the HTTP request body. The HTTP API server will buffer the full request before processing it.
 
@@ -946,7 +949,8 @@ curl http://localhost:<port>/irods-http-api/<version>/data-objects \
     -H 'Authorization: Bearer <token>' \
     -H 'irods-api-request-op=write' \
     -H 'irods-api-request-lpath=<string>' \ # Absolute logical path to a data object.
-    -H 'irods-api-request-resource=<string>' \ # The root resource to write to. Optional.
+    -H 'irods-api-request-resource=<string>' \ # The root resource holding the replica to write to. Optional.
+    -H 'irods-api-request-replica-number=<integer>' \ # The replica number of the replica to write to. Optional.
     -H 'irods-api-request-offset=<integer>' \ # Number of bytes to skip. Defaults to 0. Optional.
     -H 'irods-api-request-truncate=<integer>' \ # 0 or 1. Defaults to 1. Truncates the data object before writing. Optional.
     -H 'irods-api-request-append=<integer>' \ # 0 or 1. Defaults to 0. Appends the bytes to the data object. Optional.
@@ -954,6 +958,8 @@ curl http://localhost:<port>/irods-http-api/<version>/data-objects \
     -H 'irods-api-request-stream-index=<integer>' \ # The stream to use when writing in parallel. Optional.
     --data-binary '<bytes>' # The bytes to write.
 ```
+
+`irods-api-request-resource` and `irods-api-request-replica-number` are mutually exclusive parameters. The behavior of the operation is unspecified if both parameters are provided.
 
 Information which describes the operation is sent via HTTP headers and the data to write to the data object is sent in the body of the request. This difference results in improved memory usage and can lead to faster transfers. It is easier to implement for clients as well.
 
