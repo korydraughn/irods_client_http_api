@@ -1666,28 +1666,10 @@ namespace
 					}
 
 					if (const auto iter = _args.find("src-resource"); iter != std::end(_args)) {
-#if 0
-						if (_args.find("src-replica-number") != std::end(_args)) {
-							logging::error(
-								*_sess_ptr,
-								"{}: [src-resource] and [src-replica-number] parameters are incompatible.",
-								fn);
-							return _sess_ptr->send(irods::http::fail(http::status::bad_request));
-						}
-#endif
 						addKeyVal(&input.condInput, RESC_NAME_KW, iter->second.c_str());
 					}
 
 					if (const auto iter = _args.find("src-replica-number"); iter != std::end(_args)) {
-#if 0
-						if (_args.find("src-resource") != std::end(_args)) {
-							logging::error(
-								*_sess_ptr,
-								"{}: [src-resource] and [src-replica-number] parameters are incompatible.",
-								fn);
-							return _sess_ptr->send(irods::http::fail(http::status::bad_request));
-						}
-#endif
 						addKeyVal(&input.condInput, REPL_NUM_KW, iter->second.c_str());
 					}
 
