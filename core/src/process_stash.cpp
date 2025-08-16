@@ -54,14 +54,10 @@ namespace irods::http::process_stash
 
 	auto visit(const std::string& _key, const std::function<void(boost::any&)>& _visitor) -> bool
 	{
-		std::shared_lock read_lock{g_mtx};
-		if (g_stash.find(_key) != std::end(g_stash)) {
-			read_lock.unlock();
-			std::lock_guard write_lock{g_mtx};
-			if (auto iter = g_stash.find(_key); iter != std::end(g_stash)) {
-				_visitor(iter->second);
-				return true;
-			}
+		std::lock_guard write_lock{g_mtx};
+		if (auto iter = g_stash.find(_key); iter != std::end(g_stash)) {
+			_visitor(iter->second);
+			return true;
 		}
 
 		return false;
