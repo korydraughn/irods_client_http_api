@@ -25,7 +25,8 @@ test_config = {
     'irods_zone': 'tempZone',
     'irods_server_hostname': 'localhost',
 
-    'run_genquery2_tests': True
+    'run_genquery2_tests': True,
+    'run_quota_tests': False
 }
 
 schema = {
