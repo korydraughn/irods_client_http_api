@@ -4137,6 +4137,9 @@ class test_query_endpoint(unittest.TestCase):
         do_test_server_reports_error_when_op_is_not_supported(self)
 
 class test_quotas_endpoint(unittest.TestCase):
+    # TODO(irods/irods#8624): Update this comment once iRODS moves configuration of
+    # quotas into the catalog.
+    #
     # This test suite requires the iRODS server to be configured with quota monitoring
     # enabled. This is accomplished by setting msiSetRescQuotaPolicy("on") in core.re.
 
