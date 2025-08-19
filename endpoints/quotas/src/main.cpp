@@ -230,8 +230,8 @@ namespace
 					input.arg2 = group_iter->second.c_str();
 					input.arg4 = quota_iter->second.c_str();
 
-					// Apply the quota as a resource quota if the user set the resource paramter.
-				    // Otherwise, apply it as a quota across all resources.
+					// Apply the quota as a resource quota if the user set the resource parameter.
+				    // Otherwise, apply it as a global quota across all resources.
 					const auto resource_iter = _args.find("resource");
 					if (resource_iter != std::end(_args)) {
 						input.arg3 = resource_iter->second.c_str();

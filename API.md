@@ -1486,7 +1486,7 @@ HTTP Method: GET
 curl http://localhost:<port>/irods-http-api/<version>/quotas \
     -H 'Authorization: Bearer <token>' \
     --data-urlencode 'op=stat' \
-    --data-urlencode 'group=<string>' \ # The group which to report quotas for. Optional.
+    --data-urlencode 'group=<string>' \ # The group on which to report. Optional.
     -G
 ```
 
@@ -1540,8 +1540,8 @@ HTTP Method: POST
 curl http://localhost:<port>/irods-http-api/<version>/quotas \
     -H 'Authorization: Bearer <token>' \
     --data-urlencode 'op=set_group_quota' \
-    --data-urlencode 'group=<string>' \ # The group to apply the quota to.
-    --data-urlencode 'resource=<string>' \ # The resource to apply the quota to. Optional.
+    --data-urlencode 'group=<string>' \ # The group to which the new quota applies.
+    --data-urlencode 'resource=<string>' \ # The resource to which the new quota applies. Optional.
     --data-urlencode 'quota=<integer>' # The number of bytes which will serve as the quota limit.
 ```
 
@@ -1567,7 +1567,7 @@ If there was an error, expect an HTTP status code in either the 4XX or 5XX range
 Calculate or update quota information based on the state of the catalog.
 
 > [!IMPORTANT]
-> iRODS does not automatically update quota information as data changes. This operation is provided to give administrators control over how frequently quotas are updated.
+> iRODS does not automatically update quota information as data changes. This operation is provided to give administrators control over how frequently totals are calculated.
 
 #### Request
 
