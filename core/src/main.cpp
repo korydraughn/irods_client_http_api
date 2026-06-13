@@ -446,7 +446,11 @@ constexpr auto default_jsonschema() -> std::string_view
                         "size"
                     ]
                 },
-                "max_number_of_parallel_write_streams": {
+                "max_number_of_active_parallel_write_streams": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "max_number_of_streams_per_parallel_write_handle": {
                     "type": "integer",
                     "minimum": 1
                 },
@@ -470,7 +474,8 @@ constexpr auto default_jsonschema() -> std::string_view
                 "enable_4_2_compatibility",
                 "proxy_admin_account",
                 "connection_pool",
-                "max_number_of_parallel_write_streams",
+                "max_number_of_active_parallel_write_streams",
+                "max_number_of_streams_per_parallel_write_handle",
                 "max_number_of_bytes_per_read_operation",
                 "max_number_of_bytes_per_write_operation",
                 "max_number_of_rows_per_catalog_query"
@@ -562,7 +567,8 @@ auto print_configuration_template() -> void
             "refresh_when_resource_changes_detected": true
         }},
 
-        "max_number_of_parallel_write_streams": 3,
+        "max_number_of_active_parallel_write_streams": 15,
+        "max_number_of_streams_per_parallel_write_handle": 3,
 
         "max_number_of_bytes_per_read_operation": 8192,
         "max_number_of_bytes_per_write_operation": 8192,
