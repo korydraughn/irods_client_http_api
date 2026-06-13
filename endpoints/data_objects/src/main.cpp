@@ -180,8 +180,10 @@ namespace
 
 	struct parallel_write_context
 	{
+		// NOLINTBEGIN(misc-non-private-member-variables-in-classes)
 		std::vector<std::shared_ptr<parallel_write_stream>> streams;
 		std::unique_ptr<std::mutex> mtx;
+		// NOLINTEND(misc-non-private-member-variables-in-classes)
 
 		auto find_available_parallel_write_stream() -> parallel_write_stream*
 		{
@@ -200,9 +202,11 @@ namespace
 		} // find_available_parallel_write_stream
 	}; // struct parallel_write_context
 
-	std::shared_mutex pwc_mtx;
-	std::unordered_map<std::string, parallel_write_context> parallel_write_contexts;
+	// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
+	std::shared_mutex g_pwc_mtx;
+	std::unordered_map<std::string, parallel_write_context> g_parallel_write_contexts;
 	std::atomic<int> g_active_parallel_write_streams;
+	// NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 	//
 	// Handler function prototypes
